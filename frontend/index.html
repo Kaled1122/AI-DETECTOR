@@ -5,92 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Detector (GPT-5)</title>
   <style>
+    :root {
+      --ai-color: #dc3545;
+      --human-color: #28a745;
+      --main-color: #007bff;
+      --bg: #f5f7fa;
+      --text: #1a1a1a;
+      --card-bg: #ffffff;
+    }
+
     body {
-      font-family: Inter, Arial, sans-serif;
-      background: #f5f7fa;
-      height: 100vh;
+      font-family: "Inter", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
       margin: 0;
     }
+
     .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 16px;
+      background: var(--card-bg);
       width: 90%;
       max-width: 600px;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: var(--text);
+    }
+
     textarea {
       width: 100%;
       height: 200px;
       padding: 12px;
+      font-size: 16px;
       border-radius: 10px;
       border: 1px solid #ccc;
+      outline: none;
       resize: none;
-      font-size: 16px;
+      transition: 0.2s ease-in-out;
     }
+
+    textarea:focus {
+      border-color: var(--main-color);
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
     button {
-      margin-top: 15px;
-      background: #007bff;
-      color: white;
+      background: var(--main-color);
+      color: #fff;
       border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      cursor: pointer;
+      padding: 12px 25px;
+      border-radius: 10px;
       font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      margin-top: 15px;
     }
-    button:hover { background: #0069d9; }
-    .result { margin-top: 20px; font-weight: 600; font-size: 18px; }
-    .ai { color: #dc3545; }
-    .human { color: #28a745; }
+
+    button:hover {
+      background: #0069d9;
+      transform: translateY(-1px);
+    }
+
+    .result {
+      margin-top: 20px;
+      font-weight: 600;
+      font-size: 20px;
+      transition: all 0.3s ease-in-out;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .ai {
+      color: var(--ai-color);
+      background: rgba(220, 53, 69, 0.1);
+      border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+
+    .human {
+      color: var(--human-color);
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    footer {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #6c757d;
+    }
+
+    footer a {
+      color: var(--main-color);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h2>🧠 GPT-5 AI Detector</h2>
-    <textarea id="inputText" placeholder="Paste text here..."></textarea>
+    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <br />
     <button onclick="detectAI()">Detect</button>
     <div id="result" class="result"></div>
+    <footer>
+      Powered by GPT-5 • 
+      <a href="https://ai-detector-production-03dd.up.railway.app" target="_blank">Backend API</a>
+    </footer>
   </div>
 
   <script>
-    // 👇 Replace this URL with your Railway deployment endpoint
+    // 👇 Railway backend API endpoint
     const BACKEND_URL = "https://ai-detector-production-03dd.up.railway.app/detect";
 
     async function detectAI() {
       const text = document.getElementById("inputText").value.trim();
-      const resultBox = document.getElementById("result");
+      const result = document.getElementById("result");
 
       if (!text) {
-        resultBox.textContent = "⚠️ Please enter text first.";
-        resultBox.className = "result";
+        result.textContent = "⚠️ Please enter some text first.";
+        result.className = "result";
         return;
       }
 
-      resultBox.textContent = "Analyzing... ⏳";
-      resultBox.className = "result";
+      result.textContent = "Analyzing... ⏳";
+      result.className = "result";
 
       try {
         const res = await fetch(BACKEND_URL, {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text })
         });
-        const data = await res.json();
 
+        const data = await res.json();
         if (data.error) {
-          resultBox.textContent = "⚠️ " + data.error;
-          resultBox.className = "result ai";
+          result.textContent = "⚠️ " + data.error;
+          result.className = "result ai";
         } else {
-          resultBox.textContent = data.result;
-          resultBox.className = "result " + (data.result.includes("AI") ? "ai" : "human");
+          const verdict = data.result;
+          result.textContent = verdict;
+          result.className = "result " + (verdict.includes("AI") ? "ai" : "human");
         }
       } catch (err) {
-        resultBox.textContent = "❌ Connection error.";
-        resultBox.className = "result ai";
+        result.textContent = "❌ Connection error.";
+        result.className = "result ai";
       }
     }
   </script>
