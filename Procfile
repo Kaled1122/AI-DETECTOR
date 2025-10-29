@@ -1,4 +1,1 @@
-flask
-flask-cors
-openai
-gunicorn
+web: gunicorn app:app
