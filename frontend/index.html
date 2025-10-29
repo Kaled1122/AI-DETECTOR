@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Inter, Arial, sans-serif;
-      background: #f6f7fb;
+      background: #f5f7fa;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -15,30 +15,25 @@
       margin: 0;
     }
     .container {
-      background: white;
+      background: #fff;
       padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      text-align: center;
       width: 90%;
       max-width: 600px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
     textarea {
       width: 100%;
       height: 200px;
       padding: 12px;
-      font-size: 16px;
       border-radius: 10px;
       border: 1px solid #ccc;
       resize: none;
-      outline: none;
-      transition: 0.3s ease;
-    }
-    textarea:focus {
-      border-color: #007bff;
-      box-shadow: 0 0 5px rgba(0,123,255,0.3);
+      font-size: 16px;
     }
     button {
+      margin-top: 15px;
       background: #007bff;
       color: white;
       border: none;
@@ -46,14 +41,9 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
-      margin-top: 15px;
     }
     button:hover { background: #0069d9; }
-    .result {
-      margin-top: 20px;
-      font-weight: 600;
-      font-size: 18px;
-    }
+    .result { margin-top: 20px; font-weight: 600; font-size: 18px; }
     .ai { color: #dc3545; }
     .human { color: #28a745; }
   </style>
@@ -61,20 +51,21 @@
 <body>
   <div class="container">
     <h2>🧠 GPT-5 AI Detector</h2>
-    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <textarea id="inputText" placeholder="Paste text here..."></textarea>
     <button onclick="detectAI()">Detect</button>
     <div id="result" class="result"></div>
   </div>
 
   <script>
-    const BACKEND_URL = "/detect";
+    // 👇 Replace this URL with your Railway deployment endpoint
+    const BACKEND_URL = "https://ai-detector-production-03dd.up.railway.app/detect";
 
     async function detectAI() {
       const text = document.getElementById("inputText").value.trim();
       const resultBox = document.getElementById("result");
 
       if (!text) {
-        resultBox.textContent = "⚠️ Please enter some text.";
+        resultBox.textContent = "⚠️ Please enter text first.";
         resultBox.className = "result";
         return;
       }
@@ -94,9 +85,8 @@
           resultBox.textContent = "⚠️ " + data.error;
           resultBox.className = "result ai";
         } else {
-          const verdict = data.result;
-          resultBox.textContent = verdict;
-          resultBox.className = "result " + (verdict.includes("AI") ? "ai" : "human");
+          resultBox.textContent = data.result;
+          resultBox.className = "result " + (data.result.includes("AI") ? "ai" : "human");
         }
       } catch (err) {
         resultBox.textContent = "❌ Connection error.";
