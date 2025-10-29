@@ -20,9 +20,9 @@ def detect():
 
     try:
         prompt = f"""
-        You are an AI-text detector. 
-        If the following text is AI-generated, reply exactly 'AI'.
-        If human-written, reply exactly 'HUMAN'.
+        You are an AI-text detector.
+        If the text is AI-generated, reply 'AI'.
+        If human-written, reply 'HUMAN'.
         Text:
         {text}
         """
