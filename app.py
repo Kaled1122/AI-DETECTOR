@@ -1,35 +1,37 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 
+# -----------------------------
+# CONFIG
+# -----------------------------
 app = Flask(__name__)
 CORS(app)
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# -----------------------------
+# ROUTES
+# -----------------------------
 @app.route("/")
-def index():
-    return render_template("index.html")
+def home():
+    return jsonify({"message": "✅ AI Detector backend is running."})
 
 @app.route("/detect", methods=["POST"])
 def detect():
-    data = request.get_json()
-    text = data.get("text", "").strip()
-
-    if not text:
-        return jsonify({"error": "No text provided."}), 400
-
     try:
-        # Force GPT-5 to return only one of two options
-        prompt = f"""
-        You are an AI detection classifier. 
-        Analyze the following text carefully and determine if it was written by an AI or a human.
+        data = request.get_json()
+        text = data.get("text", "").strip()
+        if not text:
+            return jsonify({"error": "No text provided."}), 400
 
-        Rules:
-        - You must respond with EXACTLY one of these two labels:
-          "AI-GENERATED" or "HUMAN-WRITTEN"
-        - Do not explain or add extra text.
+        # Strict binary detection instruction
+        prompt = f"""
+        You are a binary AI text detector.
+        Analyze the text below and respond ONLY with one of the following:
+        - "AI" if it is AI-generated.
+        - "HUMAN" if it is human-written.
+        No explanations. No extra words.
 
         Text:
         {text}
@@ -38,7 +40,7 @@ def detect():
         response = client.chat.completions.create(
             model="gpt-5",
             messages=[
-                {"role": "system", "content": "You are a strict AI detector. Always give a binary result."},
+                {"role": "system", "content": "You are a strict AI detection engine."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0
@@ -46,16 +48,20 @@ def detect():
 
         verdict = response.choices[0].message.content.strip().upper()
 
+        # Format output for frontend
         if "AI" in verdict:
-            flag = "❌ FLAGGED: AI-GENERATED"
+            result = "❌ FLAGGED: AI-GENERATED"
         else:
-            flag = "✅ CLEAR: HUMAN-WRITTEN"
+            result = "✅ CLEAR: HUMAN-WRITTEN"
 
-        return jsonify({"result": flag})
+        return jsonify({"result": result})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
+# -----------------------------
+# ENTRY POINT
+# -----------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
