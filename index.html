@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Detector (GPT-5)</title>
+  <script>
+    async function detectAI() {
+      const text = document.getElementById("inputText").value.trim();
+      const resultBox = document.getElementById("result");
+      if (!text) return resultBox.innerHTML = "⚠️ Please enter text.";
+
+      resultBox.innerHTML = "Analyzing... ⏳";
+
+      const response = await fetch("/detect", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text})
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        resultBox.innerHTML = "⚠️ Error: " + data.error;
+      } else {
+        const verdict = data.result;
+        resultBox.innerHTML = verdict;
+
+        if (verdict.includes("AI")) {
+          resultBox.style.color = "#dc3545"; // red
+        } else {
+          resultBox.style.color = "#28a745"; // green
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: #f5f6f8;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 16px;
+      resize: none;
+    }
+    button {
+      margin-top: 12px;
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0069d9;
+    }
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🧠 GPT-5 AI Detector</h2>
+    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <button onclick="detectAI()">Detect</button>
+    <div id="result"></div>
+  </div>
+</body>
+</html>
