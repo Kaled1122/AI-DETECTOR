@@ -1,55 +1,43 @@
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
+import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
+
+# Initialize OpenAI client safely
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# ✅ Root route (this is what fixes the “train has not arrived” issue)
 @app.route("/")
 def home():
     return jsonify({"message": "✅ AI Detector backend is running."})
 
+# ✅ Detection route
 @app.route("/detect", methods=["POST"])
 def detect():
-    data = request.get_json(silent=True) or {}
-    text = data.get("text", "").strip()
-    if not text:
-        return jsonify({"error": "No text provided."}), 400
-
     try:
-        prompt = f"""
-        You are an AI-text detector.
-        If the text is AI-generated, reply 'AI'.
-        If human-written, reply 'HUMAN'.
-        Text:
-        {text}
-        """
+        data = request.get_json()
+        text = data.get("text", "")
+        if not text:
+            return jsonify({"error": "No text provided."}), 400
 
-        response = client.chat.completions.create(
-            model="gpt-5",
+        # Call GPT model (example)
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a strict binary AI detector."},
-                {"role": "user", "content": prompt},
+                {"role": "system", "content": "Detect if the text is AI-generated or human-written."},
+                {"role": "user", "content": text},
             ],
-            temperature=0
         )
 
-        verdict = (response.choices[0].message.content or "").strip().upper()
-
-        if "AI" in verdict:
-            result = "❌ FLAGGED: AI-GENERATED"
-        elif "HUMAN" in verdict:
-            result = "✅ CLEAR: HUMAN-WRITTEN"
-        else:
-            result = f"⚠️ UNKNOWN RESPONSE: {verdict}"
-
+        result = completion.choices[0].message.content
         return jsonify({"result": result})
 
     except Exception as e:
-        return jsonify({"error": f"OpenAI request failed: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
