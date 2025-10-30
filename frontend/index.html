@@ -4,44 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Detector (GPT-5)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ai-color: #ff3b3b;
+      --ai-color: #ef4444;
       --human-color: #22c55e;
-      --main-color: #007bff;
-      --bg-gradient: linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%);
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      --border: rgba(255, 255, 255, 0.3);
-    }
-
-    * {
-      box-sizing: border-box;
+      --main-color: #2563eb;
+      --bg: linear-gradient(135deg, #e0e7ff, #f9fafb);
     }
 
     body {
       font-family: "Inter", sans-serif;
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      margin: 0;
+      background: var(--bg);
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #1a1a1a;
+      margin: 0;
+      color: #111827;
     }
 
-    .container {
-      background: var(--card-bg);
-      backdrop-filter: blur(15px);
-      border-radius: 20px;
-      padding: 40px;
+    .card {
+      background: white;
       width: 90%;
-      max-width: 650px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
+      max-width: 640px;
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
       text-align: center;
-      animation: fadeIn 0.6s ease-in-out;
+      animation: fadeIn 0.6s ease;
     }
 
     @keyframes fadeIn {
@@ -50,132 +41,112 @@
     }
 
     h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      color: #111;
-      background: linear-gradient(90deg, #007bff, #6a11cb);
+      background: linear-gradient(90deg, #2563eb, #9333ea);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-
-    h2 {
-      margin-top: 0;
-      font-weight: 500;
-      color: #666;
-      font-size: 1rem;
+      font-size: 2rem;
+      margin-bottom: 10px;
     }
 
     textarea {
       width: 100%;
-      height: 180px;
+      height: 160px;
+      border: 1px solid #cbd5e1;
       border-radius: 12px;
-      border: 1px solid #ccc;
       padding: 14px;
       font-size: 16px;
       resize: none;
       outline: none;
-      transition: all 0.2s ease;
-      margin-top: 15px;
-      background: rgba(255,255,255,0.7);
+      transition: 0.2s;
     }
 
     textarea:focus {
       border-color: var(--main-color);
-      box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
     }
 
     button {
-      background: linear-gradient(90deg, #007bff, #6a11cb);
-      border: none;
+      background: linear-gradient(90deg, #2563eb, #9333ea);
       color: white;
-      padding: 14px 30px;
+      border: none;
       border-radius: 12px;
+      padding: 12px 26px;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 20px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 18px;
+      transition: all 0.2s ease;
     }
 
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
     }
 
     .result {
-      margin-top: 25px;
-      font-size: 18px;
-      font-weight: 600;
-      padding: 15px;
-      border-radius: 12px;
-      transition: all 0.4s ease;
-      opacity: 0;
+      margin-top: 30px;
+      text-align: left;
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
     }
 
-    .visible {
-      opacity: 1;
+    .circle {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: conic-gradient(var(--main-color) 0deg, #e5e7eb 0deg);
+      margin: 25px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--main-color);
+      transition: all 1s ease;
     }
 
-    .ai {
-      color: var(--ai-color);
-      background: rgba(255, 59, 59, 0.1);
-      border: 1px solid rgba(255, 59, 59, 0.3);
+    .circle.ai { --main-color: var(--ai-color); }
+    .circle.human { --main-color: var(--human-color); }
+
+    .circle span {
+      position: absolute;
+      font-size: 1.3rem;
     }
 
-    .human {
-      color: var(--human-color);
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-    }
-
-    .bar-container {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.05);
+    .detail {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 14px;
       border-radius: 10px;
-      height: 10px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-
-    .bar {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, #22c55e, #ff3b3b);
-      border-radius: 10px;
-      transition: width 1s ease-out;
+      margin-top: 15px;
+      line-height: 1.5;
+      font-size: 15px;
     }
 
     footer {
       margin-top: 25px;
       font-size: 13px;
-      color: #6c757d;
+      color: #6b7280;
     }
-
-    footer a {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
+    footer a { color: #2563eb; text-decoration: none; }
   </style>
 </head>
-
 <body>
-  <div class="container">
+  <div class="card">
     <h1>🧠 GPT-5 AI Detector</h1>
-    <h2>Check how much of your text seems AI-generated</h2>
+    <p>Analyze text and view AI likelihood percentage.</p>
 
     <textarea id="inputText" placeholder="Paste your text here..."></textarea>
-    <button onclick="detectAI()">Analyze Text</button>
+    <button onclick="detectAI()">Analyze</button>
 
-    <div id="result" class="result"></div>
-    <div class="bar-container"><div id="bar" class="bar"></div></div>
+    <div id="circle" class="circle"><span>0%</span></div>
+    <div id="result" class="result">
+      <div id="verdict" class="detail"></div>
+      <div id="likelihood" class="detail"></div>
+      <div id="reason" class="detail"></div>
+    </div>
 
-    <footer>
-      Powered by <strong>GPT-5</strong> • 
-      <a href="https://ai-detector-production-895a.up.railway.app" target="_blank">Backend API</a>
-    </footer>
+    <footer>Powered by GPT-5 • <a href="https://ai-detector-production-895a.up.railway.app" target="_blank">Backend API</a></footer>
   </div>
 
   <script>
@@ -183,51 +154,69 @@
 
     async function detectAI() {
       const text = document.getElementById("inputText").value.trim();
+      const circle = document.getElementById("circle");
+      const circleText = circle.querySelector("span");
       const result = document.getElementById("result");
-      const bar = document.getElementById("bar");
+      const verdictBox = document.getElementById("verdict");
+      const likeBox = document.getElementById("likelihood");
+      const reasonBox = document.getElementById("reason");
 
       if (!text) {
-        result.textContent = "⚠️ Please enter some text first.";
-        result.className = "result visible ai";
-        bar.style.width = "0%";
+        verdictBox.innerHTML = "⚠️ Please enter some text.";
+        result.style.display = "block";
         return;
       }
 
-      result.textContent = "Analyzing... ⏳";
-      result.className = "result visible";
-      bar.style.width = "0%";
+      circleText.textContent = "⏳";
+      circle.style.background = "conic-gradient(#cbd5e1 0deg, #cbd5e1 360deg)";
+      result.style.display = "none";
 
       try {
         const res = await fetch(BACKEND_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text })
+          body: JSON.stringify({ text }),
         });
-
         const data = await res.json();
 
         if (data.error) {
-          result.textContent = "⚠️ " + data.error;
-          result.className = "result visible ai";
-          bar.style.width = "0%";
-        } else {
-          const { result: verdict, confidence, reason } = data;
-          const numericConfidence = parseInt(confidence.replace("%", "")) || 0;
-
-          result.innerHTML = `
-            <strong>${verdict}</strong><br>
-            Confidence: ${confidence}<br>
-            <small>${reason}</small>
-          `;
-
-          bar.style.width = numericConfidence + "%";
-          result.className = "result visible " + (verdict.includes("AI") ? "ai" : "human");
+          verdictBox.innerHTML = "⚠️ " + data.error;
+          result.style.display = "block";
+          return;
         }
+
+        const { result: verdict, confidence, reason } = data;
+        const numericConfidence = parseInt(confidence) || 0;
+
+        // Animate circle
+        animateCircle(circle, circleText, numericConfidence, verdict.includes("AI") ? "ai" : "human");
+
+        verdictBox.innerHTML = `<strong>1️⃣ Verdict:</strong> ${verdict}`;
+        likeBox.innerHTML = `<strong>2️⃣ AI Likelihood:</strong> ${confidence}`;
+        reasonBox.innerHTML = `<strong>3️⃣ Explanation:</strong> ${reason}`;
+        result.style.display = "block";
+
       } catch (err) {
-        result.textContent = "❌ Connection error.";
-        result.className = "result visible ai";
-        bar.style.width = "0%";
+        verdictBox.innerHTML = "❌ Connection error.";
+        result.style.display = "block";
       }
+    }
+
+    function animateCircle(circle, text, percent, type) {
+      circle.classList.remove("ai", "human");
+      circle.classList.add(type);
+
+      let current = 0;
+      const step = () => {
+        if (current <= percent) {
+          const color = type === "ai" ? "#ef4444" : "#22c55e";
+          circle.style.background = `conic-gradient(${color} ${current * 3.6}deg, #e5e7eb ${current * 3.6}deg)`;
+          text.textContent = `${current}%`;
+          current++;
+          requestAnimationFrame(step);
+        }
+      };
+      step();
     }
   </script>
 </body>
