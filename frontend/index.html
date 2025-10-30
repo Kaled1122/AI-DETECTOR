@@ -7,8 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ai-color: #ef4444;
-      --human-color: #22c55e;
+      --ai-color: #dc2626;
+      --human-color: #16a34a;
       --main-color: #2563eb;
       --bg: linear-gradient(135deg, #e0e7ff, #f9fafb);
     }
@@ -16,7 +16,7 @@
     body {
       font-family: "Inter", sans-serif;
       background: var(--bg);
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -25,27 +25,27 @@
     }
 
     .card {
-      background: white;
+      background: #fff;
       width: 90%;
       max-width: 640px;
       border-radius: 20px;
       padding: 40px 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
       text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      background: linear-gradient(90deg, #2563eb, #9333ea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 2rem;
-      margin-bottom: 10px;
+      color: #1e1e1e;
+      font-weight: 700;
+      font-size: 1.9rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    p.subtitle {
+      color: #6b7280;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
     }
 
     textarea {
@@ -67,42 +67,35 @@
 
     button {
       background: linear-gradient(90deg, #2563eb, #9333ea);
-      color: white;
+      color: #fff;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 12px 26px;
       font-size: 16px;
       cursor: pointer;
-      margin-top: 18px;
+      margin-top: 20px;
       transition: all 0.2s ease;
     }
 
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
-    }
-
-    .result {
-      margin-top: 30px;
-      text-align: left;
-      display: none;
-      animation: fadeIn 0.5s ease-in-out;
+      opacity: 0.95;
+      transform: translateY(-1px);
     }
 
     .circle {
       position: relative;
-      width: 130px;
-      height: 130px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       background: conic-gradient(var(--main-color) 0deg, #e5e7eb 0deg);
-      margin: 25px auto;
+      margin: 30px auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 1.5rem;
       color: var(--main-color);
-      transition: all 1s ease;
+      font-size: 1.6rem;
+      font-weight: 700;
+      transition: all 0.8s ease;
     }
 
     .circle.ai { --main-color: var(--ai-color); }
@@ -110,43 +103,66 @@
 
     .circle span {
       position: absolute;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
+      color: #111827;
     }
 
-    .detail {
+    .result {
+      display: none;
+      margin-top: 10px;
+      text-align: left;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .info-box {
       background: #f9fafb;
       border: 1px solid #e5e7eb;
-      padding: 14px;
       border-radius: 10px;
-      margin-top: 15px;
+      padding: 14px 16px;
+      margin-top: 10px;
       line-height: 1.5;
       font-size: 15px;
     }
 
+    .info-box strong {
+      display: inline-block;
+      width: 140px;
+      color: #1e293b;
+    }
+
     footer {
-      margin-top: 25px;
+      margin-top: 30px;
       font-size: 13px;
       color: #6b7280;
     }
-    footer a { color: #2563eb; text-decoration: none; }
+    footer a { color: var(--main-color); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>🧠 GPT-5 AI Detector</h1>
-    <p>Analyze text and view AI likelihood percentage.</p>
+    <h1>GPT-5 AI Detector</h1>
+    <p class="subtitle">Analyze text and view AI likelihood percentage.</p>
 
     <textarea id="inputText" placeholder="Paste your text here..."></textarea>
     <button onclick="detectAI()">Analyze</button>
 
     <div id="circle" class="circle"><span>0%</span></div>
+
     <div id="result" class="result">
-      <div id="verdict" class="detail"></div>
-      <div id="likelihood" class="detail"></div>
-      <div id="reason" class="detail"></div>
+      <div id="verdict" class="info-box"></div>
+      <div id="likelihood" class="info-box"></div>
+      <div id="reason" class="info-box"></div>
     </div>
 
-    <footer>Powered by GPT-5 • <a href="https://ai-detector-production-895a.up.railway.app" target="_blank">Backend API</a></footer>
+    <footer>
+      Powered by GPT-5 • <a href="https://ai-detector-production-895a.up.railway.app" target="_blank">Backend API</a>
+    </footer>
   </div>
 
   <script>
@@ -162,12 +178,12 @@
       const reasonBox = document.getElementById("reason");
 
       if (!text) {
-        verdictBox.innerHTML = "⚠️ Please enter some text.";
+        verdictBox.innerHTML = "<strong>Note:</strong> Please enter text to analyze.";
         result.style.display = "block";
         return;
       }
 
-      circleText.textContent = "⏳";
+      circleText.textContent = "…";
       circle.style.background = "conic-gradient(#cbd5e1 0deg, #cbd5e1 360deg)";
       result.style.display = "none";
 
@@ -180,24 +196,23 @@
         const data = await res.json();
 
         if (data.error) {
-          verdictBox.innerHTML = "⚠️ " + data.error;
+          verdictBox.innerHTML = "<strong>Error:</strong> " + data.error;
           result.style.display = "block";
           return;
         }
 
         const { result: verdict, confidence, reason } = data;
-        const numericConfidence = parseInt(confidence) || 0;
+        const percent = parseInt(confidence) || 0;
+        const type = verdict.includes("AI") ? "ai" : "human";
 
-        // Animate circle
-        animateCircle(circle, circleText, numericConfidence, verdict.includes("AI") ? "ai" : "human");
+        animateCircle(circle, circleText, percent, type);
 
-        verdictBox.innerHTML = `<strong>1️⃣ Verdict:</strong> ${verdict}`;
-        likeBox.innerHTML = `<strong>2️⃣ AI Likelihood:</strong> ${confidence}`;
-        reasonBox.innerHTML = `<strong>3️⃣ Explanation:</strong> ${reason}`;
+        verdictBox.innerHTML = `<strong>Verdict:</strong> ${verdict}`;
+        likeBox.innerHTML = `<strong>AI Likelihood:</strong> ${confidence}`;
+        reasonBox.innerHTML = `<strong>Explanation:</strong> ${reason}`;
         result.style.display = "block";
-
       } catch (err) {
-        verdictBox.innerHTML = "❌ Connection error.";
+        verdictBox.innerHTML = "<strong>Error:</strong> Connection problem.";
         result.style.display = "block";
       }
     }
@@ -205,11 +220,10 @@
     function animateCircle(circle, text, percent, type) {
       circle.classList.remove("ai", "human");
       circle.classList.add(type);
-
       let current = 0;
       const step = () => {
         if (current <= percent) {
-          const color = type === "ai" ? "#ef4444" : "#22c55e";
+          const color = type === "ai" ? "#dc2626" : "#16a34a";
           circle.style.background = `conic-gradient(${color} ${current * 3.6}deg, #e5e7eb ${current * 3.6}deg)`;
           text.textContent = `${current}%`;
           current++;
