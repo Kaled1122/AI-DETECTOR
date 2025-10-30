@@ -1,4 +1,6 @@
 flask
 flask-cors
-openai>=1.2.0
+openai
+torch
+transformers
 gunicorn
