@@ -111,7 +111,6 @@ def detect():
                 {"role": "system", "content": "You are a neutral linguistic auditor returning pure JSON."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0
         )
 
         raw = response.choices[0].message.content.strip()
