@@ -1,43 +1,59 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
-import os
 
+# -----------------------------
+# APP SETUP
+# -----------------------------
 app = Flask(__name__)
 CORS(app)
 
-# Initialize OpenAI client safely
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# ✅ Root route (this is what fixes the “train has not arrived” issue)
+# -----------------------------
+# ROUTES
+# -----------------------------
 @app.route("/")
 def home():
     return jsonify({"message": "✅ AI Detector backend is running."})
 
-# ✅ Detection route
+
 @app.route("/detect", methods=["POST"])
 def detect():
-    try:
-        data = request.get_json()
-        text = data.get("text", "")
-        if not text:
-            return jsonify({"error": "No text provided."}), 400
+    data = request.get_json() or {}
+    text = data.get("text", "").strip()
 
-        # Call GPT model (example)
-        completion = client.chat.completions.create(
+    if not text:
+        return jsonify({"error": "No text provided."}), 400
+
+    try:
+        prompt = f"""
+        You are an AI text detector. Return one word only:
+        - "AI" if the text is AI-generated.
+        - "HUMAN" if the text is written by a human.
+        Text: {text}
+        """
+
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Detect if the text is AI-generated or human-written."},
-                {"role": "user", "content": text},
+                {"role": "system", "content": "You are a strict AI detector."},
+                {"role": "user", "content": prompt},
             ],
+            temperature=0,
         )
 
-        result = completion.choices[0].message.content
+        verdict = (response.choices[0].message.content or "").strip().upper()
+        result = "❌ FLAGGED: AI-GENERATED" if "AI" in verdict else "✅ CLEAR: HUMAN-WRITTEN"
         return jsonify({"result": result})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
+# -----------------------------
+# RUN APP
+# -----------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
