@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Detector (GPT-5)</title>
+  <title>GPT-5 AI Detector</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --ai-color: #dc2626;
+      --ai-bg: rgba(220, 38, 38, 0.08);
       --human-color: #16a34a;
+      --human-bg: rgba(22, 163, 74, 0.08);
       --main-color: #2563eb;
       --bg: linear-gradient(135deg, #e0e7ff, #f9fafb);
     }
@@ -16,7 +18,7 @@
     body {
       font-family: "Inter", sans-serif;
       background: var(--bg);
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -25,13 +27,14 @@
     }
 
     .card {
-      background: #fff;
+      background: white;
       width: 90%;
       max-width: 640px;
       border-radius: 20px;
       padding: 40px 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       text-align: center;
+      animation: fadeIn 0.6s ease;
     }
 
     h1 {
@@ -67,7 +70,7 @@
 
     button {
       background: linear-gradient(90deg, #2563eb, #9333ea);
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 10px;
       padding: 12px 26px;
@@ -82,36 +85,55 @@
       transform: translateY(-1px);
     }
 
-    .circle {
-      position: relative;
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      background: conic-gradient(var(--main-color) 0deg, #e5e7eb 0deg);
-      margin: 30px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--main-color);
-      font-size: 1.6rem;
-      font-weight: 700;
-      transition: all 0.8s ease;
+    .progress-container {
+      width: 100%;
+      background: #e5e7eb;
+      border-radius: 10px;
+      height: 16px;
+      overflow: hidden;
+      margin: 25px 0 10px 0;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
-    .circle.ai { --main-color: var(--ai-color); }
-    .circle.human { --main-color: var(--human-color); }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #facc15, #f97316, #ef4444);
+      transition: width 1.2s ease-in-out;
+    }
 
-    .circle span {
-      position: absolute;
-      font-size: 1.4rem;
+    .progress-text {
+      font-weight: 700;
+      margin-top: 6px;
+      font-size: 1.1rem;
       color: #111827;
     }
 
     .result {
-      display: none;
-      margin-top: 10px;
+      margin-top: 25px;
       text-align: left;
-      animation: fadeIn 0.6s ease;
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .verdict-box {
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .verdict-box.ai {
+      color: var(--ai-color);
+      background: var(--ai-bg);
+      border: 1px solid rgba(220,38,38,0.2);
+    }
+
+    .verdict-box.human {
+      color: var(--human-color);
+      background: var(--human-bg);
+      border: 1px solid rgba(22,163,74,0.2);
     }
 
     .info-box {
@@ -135,8 +157,15 @@
       font-size: 13px;
       color: #6b7280;
     }
-    footer a { color: var(--main-color); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+
+    footer a {
+      color: var(--main-color);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -152,10 +181,13 @@
     <textarea id="inputText" placeholder="Paste your text here..."></textarea>
     <button onclick="detectAI()">Analyze</button>
 
-    <div id="circle" class="circle"><span>0%</span></div>
+    <div class="progress-container">
+      <div id="bar" class="progress-bar"></div>
+    </div>
+    <div id="progressText" class="progress-text">0%</div>
 
     <div id="result" class="result">
-      <div id="verdict" class="info-box"></div>
+      <div id="verdictBox" class="verdict-box"></div>
       <div id="likelihood" class="info-box"></div>
       <div id="reason" class="info-box"></div>
     </div>
@@ -170,21 +202,22 @@
 
     async function detectAI() {
       const text = document.getElementById("inputText").value.trim();
-      const circle = document.getElementById("circle");
-      const circleText = circle.querySelector("span");
+      const bar = document.getElementById("bar");
+      const progressText = document.getElementById("progressText");
       const result = document.getElementById("result");
-      const verdictBox = document.getElementById("verdict");
+      const verdictBox = document.getElementById("verdictBox");
       const likeBox = document.getElementById("likelihood");
       const reasonBox = document.getElementById("reason");
 
       if (!text) {
-        verdictBox.innerHTML = "<strong>Note:</strong> Please enter text to analyze.";
+        verdictBox.className = "verdict-box ai";
+        verdictBox.textContent = "No text entered.";
         result.style.display = "block";
         return;
       }
 
-      circleText.textContent = "…";
-      circle.style.background = "conic-gradient(#cbd5e1 0deg, #cbd5e1 360deg)";
+      progressText.textContent = "Analyzing...";
+      bar.style.width = "0%";
       result.style.display = "none";
 
       try {
@@ -196,41 +229,46 @@
         const data = await res.json();
 
         if (data.error) {
-          verdictBox.innerHTML = "<strong>Error:</strong> " + data.error;
+          verdictBox.className = "verdict-box ai";
+          verdictBox.textContent = "Error: " + data.error;
           result.style.display = "block";
           return;
         }
 
         const { result: verdict, confidence, reason } = data;
         const percent = parseInt(confidence) || 0;
-        const type = verdict.includes("AI") ? "ai" : "human";
+        const isAI = verdict.includes("AI");
 
-        animateCircle(circle, circleText, percent, type);
+        // Verdict box color
+        verdictBox.className = isAI ? "verdict-box ai" : "verdict-box human";
+        verdictBox.textContent = verdict;
 
-        verdictBox.innerHTML = `<strong>Verdict:</strong> ${verdict}`;
+        // Animate progress bar
+        animateBar(bar, progressText, percent);
+
+        // Additional info
         likeBox.innerHTML = `<strong>AI Likelihood:</strong> ${confidence}`;
         reasonBox.innerHTML = `<strong>Explanation:</strong> ${reason}`;
         result.style.display = "block";
+
       } catch (err) {
-        verdictBox.innerHTML = "<strong>Error:</strong> Connection problem.";
+        verdictBox.className = "verdict-box ai";
+        verdictBox.textContent = "Connection error.";
         result.style.display = "block";
       }
     }
 
-    function animateCircle(circle, text, percent, type) {
-      circle.classList.remove("ai", "human");
-      circle.classList.add(type);
+    function animateBar(bar, text, percent) {
       let current = 0;
-      const step = () => {
+      const animate = () => {
         if (current <= percent) {
-          const color = type === "ai" ? "#dc2626" : "#16a34a";
-          circle.style.background = `conic-gradient(${color} ${current * 3.6}deg, #e5e7eb ${current * 3.6}deg)`;
-          text.textContent = `${current}%`;
+          bar.style.width = current + "%";
+          text.textContent = current + "%";
           current++;
-          requestAnimationFrame(step);
+          requestAnimationFrame(animate);
         }
       };
-      step();
+      animate();
     }
   </script>
 </body>
