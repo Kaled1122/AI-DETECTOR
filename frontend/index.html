@@ -3,230 +3,177 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GPT-5 AI Linguistic Detector</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <title>AI Text Detector (CIPD Edition)</title>
   <style>
     :root {
-      --green: #16a34a;
-      --amber: #f59e0b;
-      --red: #dc2626;
-      --bg: linear-gradient(135deg, #f5f7fa, #eef2ff);
-      --main: #2563eb;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
+      --main-blue: #007bff;
+      --light-gray: #f5f7fa;
+      --dark-gray: #1a1a1a;
+      --green: #d4edda;
+      --red: #f8d7da;
+      --border-green: #c3e6cb;
+      --border-red: #f5c6cb;
+      --card-bg: #fff;
     }
 
     body {
+      background: var(--light-gray);
       font-family: "Inter", sans-serif;
-      background: var(--bg);
-      height: 100vh;
+      color: var(--dark-gray);
       margin: 0;
+      height: 100vh;
       display: flex;
-      align-items: center;
       justify-content: center;
-      color: var(--text);
+      align-items: center;
     }
 
-    .card {
-      background: #fff;
-      width: 90%;
-      max-width: 720px;
-      border-radius: 20px;
-      padding: 40px 50px;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-      text-align: center;
+    .wrapper {
+      width: 95%;
+      max-width: 750px;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 35px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 22px;
-      min-height: 80vh;
     }
 
     h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 0;
-      background: linear-gradient(90deg, #2563eb, #9333ea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    p.subtitle {
-      font-size: 0.95rem;
-      color: var(--muted);
-      margin-top: 4px;
+      font-size: 1.9rem;
+      margin-bottom: 25px;
+      text-align: center;
     }
 
     textarea {
       width: 100%;
-      height: 200px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      font-size: 16px;
-      resize: none;
+      height: 180px;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
       outline: none;
+      resize: none;
+      margin-bottom: 15px;
       transition: 0.2s ease;
     }
 
     textarea:focus {
-      border-color: var(--main);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      border-color: var(--main-blue);
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
     }
 
-    .button-group {
+    .buttons {
       display: flex;
-      gap: 12px;
-      margin-top: 8px;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
     }
 
     button {
-      background: linear-gradient(90deg, #2563eb, #9333ea);
+      background: var(--main-blue);
       color: #fff;
       border: none;
-      border-radius: 10px;
-      padding: 12px 28px;
-      font-size: 16px;
+      padding: 10px 22px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      font-size: 15px;
+      transition: 0.2s ease-in-out;
     }
 
-    button.secondary {
-      background: #f9fafb;
-      color: var(--main);
-      border: 1px solid var(--main);
-    }
-
-    .progress-container {
-      width: 100%;
-      background: #e5e7eb;
-      border-radius: 10px;
-      height: 16px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #16a34a, #facc15, #f97316, #dc2626);
-      transition: width 1.2s ease-in-out;
-    }
-
-    .progress-text {
-      font-weight: 600;
-      margin-top: 8px;
-      font-size: 1rem;
+    button:hover {
+      background: #0056b3;
     }
 
     .result {
       width: 100%;
-      margin-top: 25px;
       text-align: left;
-      display: none;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    .verdict-box {
+      font-size: 16px;
       border-radius: 10px;
-      padding: 16px 18px;
-      font-weight: 600;
-      margin-bottom: 14px;
-    }
-
-    .verdict-box.green {
-      background: rgba(22, 163, 74, 0.08);
-      border: 1px solid rgba(22, 163, 74, 0.25);
-      color: var(--green);
-    }
-
-    .verdict-box.amber {
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      color: var(--amber);
-    }
-
-    .verdict-box.red {
-      background: rgba(220, 38, 38, 0.08);
-      border: 1px solid rgba(220, 38, 38, 0.25);
-      color: var(--red);
-    }
-
-    .info-box {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 14px 16px;
+      padding: 15px;
       margin-top: 10px;
-      font-size: 15px;
-      line-height: 1.5;
+      display: none;
+    }
+
+    .ai {
+      background: var(--red);
+      border: 1px solid var(--border-red);
+    }
+
+    .human {
+      background: var(--green);
+      border: 1px solid var(--border-green);
     }
 
     footer {
-      margin-top: 30px;
+      margin-top: 25px;
       font-size: 13px;
-      color: var(--muted);
+      color: #6c757d;
+      text-align: center;
     }
 
-    footer strong { color: var(--main); }
+    footer span {
+      font-weight: 500;
+    }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .output-box {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    #humanizedText {
+      width: 100%;
+      height: 150px;
+      background: #f9fafc;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      color: #333;
+      display: none;
+      white-space: pre-wrap;
     }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h1>GPT-5 AI Linguistic Detector</h1>
-    <p class="subtitle">Analyze writing or humanize it for natural tone.</p>
+  <div class="wrapper">
+    <h1>AI Text Detector (CIPD Edition)</h1>
 
     <textarea id="inputText" placeholder="Paste your text here..."></textarea>
 
-    <div class="button-group">
-      <button onclick="detectAI()">Analyze</button>
-      <button class="secondary" onclick="humanizeText()">Humanize</button>
+    <div class="buttons">
+      <button onclick="analyzeText()">Analyze</button>
+      <button onclick="humanizeText()">Humanize</button>
     </div>
 
-    <div class="progress-container"><div id="bar" class="progress-bar"></div></div>
-    <div id="progressText" class="progress-text">0%</div>
+    <div id="result" class="result"></div>
 
-    <div id="result" class="result">
-      <div id="verdictBox" class="verdict-box"></div>
-      <div id="indicatorsList" class="info-box"></div>
-      <div id="recommendation" class="info-box"></div>
-      <div id="note" class="info-box"></div>
+    <div class="output-box">
+      <div id="humanizedText"></div>
     </div>
 
-    <footer>Made by <strong>Kaled Alenezi</strong></footer>
+    <footer>Made by <span>Kaled Alenezi</span></footer>
   </div>
 
   <script>
     const BACKEND_URL = "https://ai-detector-production-895a.up.railway.app";
 
-    async function detectAI() {
+    async function analyzeText() {
       const text = document.getElementById("inputText").value.trim();
-      const bar = document.getElementById("bar");
-      const progressText = document.getElementById("progressText");
       const result = document.getElementById("result");
-      const verdictBox = document.getElementById("verdictBox");
-      const indicatorsList = document.getElementById("indicatorsList");
-      const recommendationBox = document.getElementById("recommendation");
-      const noteBox = document.getElementById("note");
+      const humanizedBox = document.getElementById("humanizedText");
+      humanizedBox.style.display = "none";
 
       if (!text) {
-        verdictBox.className = "verdict-box red";
-        verdictBox.textContent = "No text entered.";
+        result.textContent = "Please enter text first.";
         result.style.display = "block";
+        result.className = "result ai";
         return;
       }
 
-      result.style.display = "none";
-      progressText.textContent = "Analyzing...";
-      bar.style.width = "0%";
+      result.textContent = "Analyzing...";
+      result.style.display = "block";
+      result.className = "result";
 
       try {
         const res = await fetch(`${BACKEND_URL}/detect`, {
@@ -236,39 +183,36 @@
         });
 
         const data = await res.json();
-
         if (data.error) {
-          verdictBox.className = "verdict-box red";
-          verdictBox.textContent = "Error: " + data.error;
+          result.textContent = data.error;
+          result.className = "result ai";
+        } else {
+          const colorClass =
+            data.review_priority === "High" || data.color === "red"
+              ? "ai"
+              : "human";
+          result.className = "result " + colorClass;
           result.style.display = "block";
-          return;
+          result.innerHTML = `
+            <strong>${data.review_priority || data.risk_label || "Result"} (${data.percentage || data.confidence})</strong><br>
+            ${data.reason || data.indicators || ""}<br>
+            Recommendation: ${data.recommendation || "N/A"}<br>
+            <small>${data.note || data.disclaimer || ""}</small>
+          `;
         }
-
-        const percent = parseInt(data.percentage) || 0;
-        const color = data.color || "amber";
-
-        verdictBox.className = `verdict-box ${color}`;
-        verdictBox.textContent = `${data.review_priority} Review Priority (${data.percentage})`;
-
-        animateBar(bar, progressText, percent);
-
-        indicatorsList.innerHTML = `<strong>Indicators:</strong><ul>${data.indicators.map(i => `<li>${i}</li>`).join("")}</ul>`;
-        recommendationBox.innerHTML = `<strong>Recommendation:</strong> ${data.recommendation}`;
-        noteBox.innerHTML = `<strong>Note:</strong> ${data.note}`;
-
-        result.style.display = "block";
-
       } catch (err) {
-        verdictBox.className = "verdict-box red";
-        verdictBox.textContent = "Connection error.";
-        result.style.display = "block";
+        result.textContent = "Connection error. Please try again.";
+        result.className = "result ai";
       }
     }
 
     async function humanizeText() {
-      const textarea = document.getElementById("inputText");
-      const text = textarea.value.trim();
-      if (!text) return alert("Please enter text first.");
+      const text = document.getElementById("inputText").value.trim();
+      const humanizedBox = document.getElementById("humanizedText");
+      if (!text) return;
+
+      humanizedBox.textContent = "Generating humanized version...";
+      humanizedBox.style.display = "block";
 
       try {
         const res = await fetch(`${BACKEND_URL}/humanize`, {
@@ -277,24 +221,11 @@
           body: JSON.stringify({ text })
         });
         const data = await res.json();
-        if (data.humanized_text) textarea.value = data.humanized_text;
-        else alert("Humanization failed. Try again.");
-      } catch {
-        alert("Connection error while humanizing.");
+        humanizedBox.textContent =
+          data.humanized || data.error || "Unable to humanize text.";
+      } catch (err) {
+        humanizedBox.textContent = "Error connecting to server.";
       }
-    }
-
-    function animateBar(bar, text, percent) {
-      let current = 0;
-      const animate = () => {
-        if (current <= percent) {
-          bar.style.width = current + "%";
-          text.textContent = current + "%";
-          current++;
-          requestAnimationFrame(animate);
-        }
-      };
-      animate();
     }
   </script>
 </body>
