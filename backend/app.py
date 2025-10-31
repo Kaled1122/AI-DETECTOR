@@ -15,9 +15,7 @@ client = OpenAI(api_key=OPENAI_KEY)
 
 LOG_FILE = "detection_log.jsonl"
 
-# ⚡ Load a small open model for local probability stats
-# (you can swap for any causal LM like "mistralai/Mistral-7B-Instruct-v0.2"
-# if you have a GPU)
+# ⚡ Local model for probability stats
 MODEL_NAME = os.getenv("LOCAL_MODEL", "distilgpt2")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
@@ -69,7 +67,7 @@ def home():
     return jsonify({
         "message": "✅ CIPD AI Detector (True Statistical Hybrid) is active.",
         "local_model": MODEL_NAME,
-        "version": "4.0.0"
+        "version": "4.0.1"
     })
 
 
@@ -87,7 +85,6 @@ def detect():
         perplexity, entropy = compute_perplexity_entropy(safe_text)
 
         # Normalize to 0–100 scale
-        # (lower perplexity = more AI-like, lower entropy = more AI-like)
         norm_ppl = max(0, min(100, 100 - (min(perplexity, 200) / 2)))
         norm_entropy = max(0, min(100, 100 - entropy * 20))
 
@@ -110,7 +107,7 @@ def detect():
             messages=[
                 {"role": "system", "content": "You are a neutral linguistic auditor returning pure JSON."},
                 {"role": "user", "content": prompt}
-            ],
+            ]
         )
 
         raw = response.choices[0].message.content.strip()
@@ -181,8 +178,7 @@ def humanize():
             messages=[
                 {"role": "system", "content": "You are a skilled editor making text sound genuinely human."},
                 {"role": "user", "content": prompt}
-            ],
-            temperature=0.7
+            ]
         )
 
         humanized = response.choices[0].message.content.strip()
