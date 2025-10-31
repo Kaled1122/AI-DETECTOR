@@ -3,46 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Text Detector (CIPD Edition)</title>
+  <title>CIPD AI Detector</title>
   <style>
     :root {
-      --main-blue: #007bff;
-      --light-gray: #f5f7fa;
-      --dark-gray: #1a1a1a;
-      --green: #d4edda;
-      --red: #f8d7da;
-      --border-green: #c3e6cb;
-      --border-red: #f5c6cb;
+      --green: #28a745;
+      --red: #dc3545;
+      --orange: #fd7e14;
+      --blue: #007bff;
+      --bg: #f8f9fb;
+      --text: #222;
       --card-bg: #fff;
     }
 
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
     body {
-      background: var(--light-gray);
-      font-family: "Inter", sans-serif;
-      color: var(--dark-gray);
-      margin: 0;
-      height: 100vh;
+      background: var(--bg);
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
 
-    .wrapper {
-      width: 95%;
-      max-width: 750px;
+    .container {
       background: var(--card-bg);
+      width: 100%;
+      max-width: 700px;
       border-radius: 14px;
-      padding: 35px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 32px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
     }
 
-    h1 {
-      font-size: 1.9rem;
-      margin-bottom: 25px;
-      text-align: center;
+    h2 {
+      font-size: 1.8rem;
+      color: var(--text);
+      margin-bottom: 20px;
+      font-weight: 600;
     }
 
     textarea {
@@ -50,133 +52,115 @@
       height: 180px;
       padding: 12px;
       font-size: 15px;
-      border: 1px solid #ccc;
       border-radius: 10px;
+      border: 1px solid #ccc;
       outline: none;
       resize: none;
-      margin-bottom: 15px;
-      transition: 0.2s ease;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
     }
 
     textarea:focus {
-      border-color: var(--main-blue);
-      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
+      border-color: var(--blue);
     }
 
     button {
-      background: var(--main-blue);
-      color: #fff;
+      background: var(--blue);
+      color: white;
       border: none;
-      padding: 10px 22px;
+      padding: 12px 30px;
       border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
-      font-size: 15px;
-      transition: 0.2s ease-in-out;
+      transition: background 0.3s, transform 0.1s;
+      margin: 5px;
     }
 
     button:hover {
       background: #0056b3;
     }
 
-    .result {
-      width: 100%;
-      text-align: left;
-      font-size: 16px;
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .result-box {
+      margin-top: 25px;
+      padding: 20px;
       border-radius: 10px;
-      padding: 15px;
-      margin-top: 10px;
-      display: none;
+      background: #f1f3f5;
+      text-align: left;
+      min-height: 100px;
+      font-size: 15px;
+      line-height: 1.5;
     }
 
-    .ai {
-      background: var(--red);
-      border: 1px solid var(--border-red);
+    .score-bar {
+      width: 100%;
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--green), var(--orange), var(--red));
+      margin-top: 12px;
+      overflow: hidden;
     }
 
-    .human {
-      background: var(--green);
-      border: 1px solid var(--border-green);
+    .score-fill {
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      border-radius: 6px;
+      transition: width 0.8s ease-in-out;
     }
 
     footer {
       margin-top: 25px;
       font-size: 13px;
-      color: #6c757d;
-      text-align: center;
-    }
-
-    footer span {
-      font-weight: 500;
-    }
-
-    .output-box {
-      width: 100%;
-      margin-top: 20px;
-    }
-
-    #humanizedText {
-      width: 100%;
-      height: 150px;
-      background: #f9fafc;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 15px;
-      color: #333;
-      display: none;
-      white-space: pre-wrap;
+      color: #666;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrapper">
-    <h1>AI Text Detector (CIPD Edition)</h1>
-
-    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
-
-    <div class="buttons">
-      <button onclick="analyzeText()">Analyze</button>
-      <button onclick="humanizeText()">Humanize</button>
+  <div class="container">
+    <h2>CIPD AI Detector (Hybrid v4.0.1)</h2>
+    <textarea id="inputText" placeholder="Paste your text here for analysis..."></textarea>
+    <div>
+      <button onclick="detectAI()">Analyze Text</button>
+      <button onclick="humanizeText()">Humanize Text</button>
     </div>
 
-    <div id="result" class="result"></div>
-
-    <div class="output-box">
-      <div id="humanizedText"></div>
+    <div class="result-box" id="result">
+      Results will appear here.
     </div>
 
-    <footer>Made by <span>Kaled Alenezi</span></footer>
+    <div class="score-bar">
+      <div class="score-fill" id="scoreFill"></div>
+    </div>
+
+    <textarea id="humanizedText" placeholder="Humanized version will appear here..." readonly></textarea>
+
+    <footer>Made by <strong>Kaled Alenezi</strong></footer>
   </div>
 
   <script>
-    const BACKEND_URL = "https://ai-detector-production-895a.up.railway.app";
+    const API_BASE = "https://ai-detector-production-895a.up.railway.app";
 
-    async function analyzeText() {
+    async function detectAI() {
       const text = document.getElementById("inputText").value.trim();
       const result = document.getElementById("result");
-      const humanizedBox = document.getElementById("humanizedText");
-      humanizedBox.style.display = "none";
+      const fill = document.getElementById("scoreFill");
 
       if (!text) {
-        result.textContent = "Please enter text first.";
-        result.style.display = "block";
-        result.className = "result ai";
+        result.innerHTML = "⚠️ Please enter text first.";
+        fill.style.width = "0%";
         return;
       }
 
-      result.textContent = "Analyzing...";
-      result.style.display = "block";
-      result.className = "result";
+      result.innerHTML = "Analyzing...";
+      fill.style.width = "0%";
 
       try {
-        const res = await fetch(`${BACKEND_URL}/detect`, {
+        const res = await fetch(`${API_BASE}/detect`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text })
@@ -184,47 +168,57 @@
 
         const data = await res.json();
         if (data.error) {
-          result.textContent = data.error;
-          result.className = "result ai";
-        } else {
-          const colorClass =
-            data.review_priority === "High" || data.color === "red"
-              ? "ai"
-              : "human";
-          result.className = "result " + colorClass;
-          result.style.display = "block";
-          result.innerHTML = `
-            <strong>${data.review_priority || data.risk_label || "Result"} (${data.percentage || data.confidence})</strong><br>
-            ${data.reason || data.indicators || ""}<br>
-            Recommendation: ${data.recommendation || "N/A"}<br>
-            <small>${data.note || data.disclaimer || ""}</small>
-          `;
+          result.innerHTML = `<strong>Error:</strong> ${data.error}`;
+          fill.style.width = "0%";
+          return;
         }
+
+        const colorMap = { red: "#dc3545", orange: "#fd7e14", green: "#28a745" };
+        result.innerHTML = `
+          <strong>Detection Rating:</strong> ${data.review_priority}<br/>
+          <strong>Composite Score:</strong> ${data.percentage}<br/>
+          <strong>AI Score:</strong> ${data.ai_score}<br/>
+          <strong>Perplexity:</strong> ${data.perplexity}<br/>
+          <strong>Entropy:</strong> ${data.entropy}<br/>
+          <strong>Indicators:</strong> ${data.indicators}<br/>
+          <strong>Assessment:</strong> ${data.reason}<br/>
+          <em>${data.note}</em>
+        `;
+        fill.style.background = colorMap[data.color] || "#007bff";
+        fill.style.width = data.percentage.replace("%", "") + "%";
       } catch (err) {
-        result.textContent = "Connection error. Please try again.";
-        result.className = "result ai";
+        result.innerHTML = "❌ Connection error. Please try again.";
+        fill.style.width = "0%";
       }
     }
 
     async function humanizeText() {
       const text = document.getElementById("inputText").value.trim();
-      const humanizedBox = document.getElementById("humanizedText");
-      if (!text) return;
+      const box = document.getElementById("humanizedText");
 
-      humanizedBox.textContent = "Generating humanized version...";
-      humanizedBox.style.display = "block";
+      if (!text) {
+        box.value = "⚠️ Please enter text first.";
+        return;
+      }
+
+      box.value = "Rewriting...";
 
       try {
-        const res = await fetch(`${BACKEND_URL}/humanize`, {
+        const res = await fetch(`${API_BASE}/humanize`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text })
         });
+
         const data = await res.json();
-        humanizedBox.textContent =
-          data.humanized || data.error || "Unable to humanize text.";
+        if (data.error) {
+          box.value = `Error: ${data.error}`;
+          return;
+        }
+
+        box.value = data.humanized || "No output received.";
       } catch (err) {
-        humanizedBox.textContent = "Error connecting to server.";
+        box.value = "❌ Connection error.";
       }
     }
   </script>
