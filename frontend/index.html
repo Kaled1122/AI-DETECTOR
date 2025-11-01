@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Linguistic Authenticity Analyzer</title>
+  <title>CIPD Linguistic Authenticity Analyzer</title>
   <style>
     :root {
       --green:#28a745; --orange:#fd7e14; --red:#dc3545;
@@ -38,18 +38,22 @@
       text-align:left;font-size:15px;line-height:1.5;margin-top:20px;
     }
     .bar {
-      width:100%;height:12px;background:linear-gradient(90deg,var(--green),var(--orange),var(--red));
+      width:100%;height:12px;background:#ddd;
       border-radius:6px;margin-top:12px;overflow:hidden;
     }
     .fill {height:100%;width:0%;background:var(--blue);transition:width .8s ease;}
     footer {margin-top:25px;font-size:13px;color:#666;}
+    .weights {
+      display:flex;justify-content:space-between;margin-top:10px;
+      font-size:13px;color:#555;
+    }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <h2>Linguistic Authenticity Analyzer</h2>
-    <p style="color:#555;font-size:14px;">Estimate how naturally language is written based on flow, variation, and linguistic rhythm.</p>
+    <h2>CIPD Linguistic Authenticity Analyzer</h2>
+    <p style="color:#555;font-size:14px;">Assess how naturally text is written using linguistic, statistical, and entropy signals.</p>
 
     <textarea id="inputText" placeholder="Paste your text here..."></textarea>
     <div>
@@ -59,6 +63,8 @@
 
     <div class="output" id="result">Results will appear here.</div>
     <div class="bar"><div class="fill" id="bar"></div></div>
+
+    <div class="weights" id="weights"></div>
 
     <textarea id="humanized" placeholder="Humanized version will appear here..." readonly></textarea>
 
@@ -72,32 +78,55 @@
       const text = document.getElementById("inputText").value.trim();
       const result = document.getElementById("result");
       const bar = document.getElementById("bar");
-      if (!text) { result.innerText = "Please enter text first."; return; }
+      const weights = document.getElementById("weights");
 
-      result.innerText = "Analyzing..."; bar.style.width = "0%";
+      if (!text) {
+        result.innerText = "Please enter text first.";
+        return;
+      }
+
+      result.innerText = "Analyzing...";
+      bar.style.width = "0%";
+      weights.innerHTML = "";
 
       try {
         const res = await fetch(`${API}/detect`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({text})
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
         });
+
         const data = await res.json();
-        if (data.error){ result.innerText=data.error; return; }
+        if (data.error) {
+          result.innerText = data.error;
+          return;
+        }
+
+        const pct = parseInt(data.authenticity_index) || 0;
 
         result.innerHTML = `
-          <h3 style="margin:0;color:#222;">Authenticity Index: ${data.authenticity_index} — ${data.verdict}</h3>
+          <h3 style="margin:0;color:#222;">Authenticity Index: ${data.authenticity_index || "N/A"} — ${data.verdict || "N/A"}</h3>
           <p><strong>Language Flow:</strong> ${data.language_flow > 1000 ? "Rigid" : "Smooth"}</p>
           <p><strong>Variation:</strong> ${data.variation > 1 ? "Natural" : "Uniform"}</p>
-          <p><strong>Writing Traits Noticed:</strong> ${data.traits}</p>
-          <p><strong>Summary Insight:</strong> ${data.summary}</p>
-          <p style="font-size:13px;color:#555;">⚖️ ${data.note}</p>
+          <p><strong>Writing Traits Noticed:</strong> ${data.traits || "No traits detected."}</p>
+          <p><strong>Summary Insight:</strong> ${data.summary || "No summary provided."}</p>
+          <p style="font-size:13px;color:#555;">⚖️ ${data.note || ""}</p>
         `;
-        const pct = parseInt(data.authenticity_index);
-        bar.style.background = data.color === "red" ? "var(--red)" :
-                               data.color === "orange" ? "var(--orange)" : "var(--green)";
+
+        bar.style.background =
+          data.color === "red" ? "var(--red)" :
+          data.color === "orange" ? "var(--orange)" : "var(--green)";
         bar.style.width = pct + "%";
-      } catch {
+
+        if (data.weights) {
+          weights.innerHTML = `
+            <div>Linguistic: ${data.weights.linguistic}%</div>
+            <div>Statistical: ${data.weights.statistical}%</div>
+            <div>Entropy: ${data.weights.entropy}%</div>
+          `;
+        }
+
+      } catch (err) {
         result.innerText = "Connection error.";
       }
     }
@@ -105,18 +134,25 @@
     async function humanize() {
       const text = document.getElementById("inputText").value.trim();
       const box = document.getElementById("humanized");
-      if (!text){ box.value="Please enter text first."; return; }
 
-      box.value="Rewriting...";
-      try{
+      if (!text) {
+        box.value = "Please enter text first.";
+        return;
+      }
+
+      box.value = "Rewriting...";
+      try {
         const res = await fetch(`${API}/humanize`, {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({text})
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
         });
+
         const data = await res.json();
         box.value = data.humanized || data.error || "No output.";
-      }catch{ box.value="Connection error."; }
+      } catch {
+        box.value = "Connection error.";
+      }
     }
   </script>
 </body>
