@@ -15,7 +15,7 @@ client = OpenAI(api_key=OPENAI_KEY)
 
 LOG_FILE = "detection_log.jsonl"
 
-# Lightweight local LM for perplexity / entropy stats
+# Lightweight local LM for perplexity / entropy metrics
 MODEL_NAME = os.getenv("LOCAL_MODEL", "distilgpt2")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
@@ -28,7 +28,7 @@ if torch.cuda.is_available():
 # HELPERS
 # ---------------------------------------------------------
 def anonymize(text):
-    """Remove emails and sensitive IDs."""
+    """Remove sensitive info like emails."""
     return re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", "[email]", text)
 
 
@@ -39,7 +39,7 @@ def log_result(entry):
 
 
 def compute_perplexity_entropy(text):
-    """True perplexity + entropy."""
+    """Compute perplexity and entropy from token log probabilities."""
     enc = tokenizer(text, return_tensors="pt")
     if torch.cuda.is_available():
         enc = {k: v.to("cuda") for k, v in enc.items()}
@@ -64,7 +64,7 @@ def home():
     return jsonify({
         "message": "✅ CIPD Linguistic Authenticity Analyzer running.",
         "local_model": MODEL_NAME,
-        "version": "5.0.0"
+        "version": "5.1.0"
     })
 
 
@@ -78,19 +78,19 @@ def detect():
     safe_text = anonymize(text)
 
     try:
-        # --- 1. Statistical metrics ---
+        # --- Step 1: Statistical metrics ---
         perplexity, entropy = compute_perplexity_entropy(safe_text)
         norm_ppl = max(0, min(100, 100 - (min(perplexity, 200) / 2)))
         norm_entropy = max(0, min(100, 100 - entropy * 20))
 
-        # --- 2. GPT-5 linguistic audit ---
+        # --- Step 2: Linguistic GPT-5 analysis ---
         prompt = f"""
         You are a linguistic authenticity reviewer under CIPD Policy v3.0.
-        Examine this text for human-like or AI-like traits.
+        Examine this text for human-like or AI-like linguistic traits.
         Return ONLY valid JSON with:
         {{
           "ai_score": integer 0–100,
-          "traits": ["short list of writing traits"],
+          "traits": ["short list of observed writing traits"],
           "summary": "one-sentence neutral observation"
         }}
         Text:
@@ -99,21 +99,22 @@ def detect():
         response = client.chat.completions.create(
             model="gpt-5",
             messages=[
-                {"role": "system", "content": "Return clean JSON only."},
+                {"role": "system", "content": "Return valid JSON only."},
                 {"role": "user", "content": prompt}
             ]
         )
         raw = response.choices[0].message.content.strip()
+
         try:
             parsed = json.loads(raw)
         except Exception:
-            parsed = {"ai_score": 50, "traits": ["Parsing fallback"], "summary": "No detailed analysis."}
+            parsed = {"ai_score": 50, "traits": ["Parsing fallback"], "summary": "No detailed linguistic analysis."}
 
         ai_score = int(parsed.get("ai_score", 50))
         traits = ", ".join(parsed.get("traits", []))
         summary = parsed.get("summary", "")
 
-        # --- 3. Combine metrics ---
+        # --- Step 3: Combine metrics ---
         combined = int((ai_score * 0.6) + (norm_ppl * 0.25) + (norm_entropy * 0.15))
 
         if combined < 40:
@@ -133,9 +134,14 @@ def detect():
             "summary": summary,
             "color": color,
             "note": (
-                "This report estimates linguistic authenticity using language-flow, "
-                "variation, and stylistic features. Results are indicative only."
-            )
+                "This analysis estimates linguistic authenticity using statistical "
+                "and stylistic features. It is indicative only and should be reviewed contextually."
+            ),
+            "weights": {
+                "linguistic": 60,
+                "statistical": 25,
+                "entropy": 15
+            }
         }
 
         log_result(result)
@@ -154,21 +160,22 @@ def humanize():
 
     try:
         prompt = f"""
-        Rewrite the following text naturally, adding human rhythm, subtle emotion,
-        and sentence-length variation. Preserve meaning. Return only rewritten text.
+        Rewrite the text with natural human rhythm and tone.
+        Vary sentence length and phrasing while preserving meaning.
+        Avoid robotic flow. Return only the rewritten version.
         Text:
         {text}
         """
         response = client.chat.completions.create(
             model="gpt-5",
             messages=[
-                {"role": "system", "content": "You are a human-style editor."},
+                {"role": "system", "content": "You are a skilled human editor."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.8
         )
         humanized = response.choices[0].message.content.strip()
         return jsonify({"humanized": humanized})
+
     except Exception as e:
         return jsonify({"error": f"Humanization failed: {str(e)}"}), 500
 
